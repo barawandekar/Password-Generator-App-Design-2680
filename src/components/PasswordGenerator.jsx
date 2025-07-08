@@ -132,15 +132,15 @@ const PasswordGenerator = () => {
               <input
                 type="range"
                 min="8"
-                max="20"
+                max="50"
                 value={passwordLength}
                 onChange={(e) => setPasswordLength(parseInt(e.target.value))}
                 className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
               />
               <div className="flex justify-between text-xs text-gray-500 mt-1">
                 <span>8</span>
-                <span>14</span>
-                <span>20</span>
+                <span>29</span>
+                <span>50</span>
               </div>
             </div>
           </motion.div>
@@ -349,13 +349,21 @@ const PasswordGenerator = () => {
                   Generated Password
                 </label>
                 <div className="relative">
+                  <textarea
+                    value={password}
+                    readOnly
+                    rows={3}
+                    className="w-full pr-20 pl-4 py-3 border border-gray-300 rounded-xl bg-gray-50 font-mono text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                    style={{ display: showPassword ? 'block' : 'none' }}
+                  />
                   <input
-                    type={showPassword ? "text" : "password"}
+                    type="password"
                     value={password}
                     readOnly
                     className="w-full pr-20 pl-4 py-3 border border-gray-300 rounded-xl bg-gray-50 font-mono text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    style={{ display: showPassword ? 'none' : 'block' }}
                   />
-                  <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex gap-1">
+                  <div className="absolute right-2 top-3 flex gap-1">
                     <button
                       onClick={() => setShowPassword(!showPassword)}
                       className="p-2 text-gray-500 hover:text-gray-700 transition-colors"
@@ -403,7 +411,7 @@ const PasswordGenerator = () => {
                   <div className="flex-1 bg-gray-200 rounded-full h-2">
                     <div className="bg-gradient-to-r from-green-400 to-green-500 h-2 rounded-full w-full"></div>
                   </div>
-                  <span className="text-xs font-medium text-green-600">Strong</span>
+                  <span className="text-xs font-medium text-green-600">Very Strong</span>
                 </motion.div>
               </motion.div>
             )}
