@@ -1,4 +1,5 @@
-// Enhanced deterministic password generation utility
+// Enhanced deterministic password and number generation utility
+
 export const generatePassword = (name, passphrase = '', length) => {
   // Combine name and passphrase for stronger seed
   const combinedInput = (name + passphrase).toLowerCase().trim();
@@ -52,6 +53,127 @@ export const generatePassword = (name, passphrase = '', length) => {
   }
   
   return passwordArray.join('');
+};
+
+// Generate deterministic lowercase password (a-z and 0-9 only)
+export const generateLowerCasePassword = (name, passphrase = '', length) => {
+  // Combine name and passphrase for stronger seed
+  const combinedInput = (name + passphrase).toLowerCase().trim();
+  
+  // Create a deterministic seed from combined input and length
+  let seed = 0;
+  for (let i = 0; i < combinedInput.length; i++) {
+    seed = ((seed << 5) - seed + combinedInput.charCodeAt(i)) & 0xffffffff;
+  }
+  // Use different multiplier for lowercase to avoid collision with other generators
+  seed = Math.abs(seed + length * 5000);
+  
+  // Character sets for lowercase only
+  const lowercase = 'abcdefghijklmnopqrstuvwxyz';
+  const numbers = '0123456789';
+  const allChars = lowercase + numbers;
+  
+  // Deterministic random number generator
+  let currentSeed = seed;
+  const random = () => {
+    currentSeed = (currentSeed * 1664525 + 1013904223) % Math.pow(2, 32);
+    return currentSeed / Math.pow(2, 32);
+  };
+  
+  let password = '';
+  
+  // Ensure at least one letter and one number
+  const requiredChars = [
+    lowercase[Math.floor(random() * lowercase.length)],
+    numbers[Math.floor(random() * numbers.length)]
+  ];
+  
+  // Add required characters to password
+  for (const char of requiredChars) {
+    password += char;
+  }
+  
+  // Fill remaining positions with random lowercase characters
+  for (let i = password.length; i < length; i++) {
+    password += allChars[Math.floor(random() * allChars.length)];
+  }
+  
+  // Shuffle the password to avoid predictable patterns
+  const passwordArray = password.split('');
+  for (let i = passwordArray.length - 1; i > 0; i--) {
+    const j = Math.floor(random() * (i + 1));
+    [passwordArray[i], passwordArray[j]] = [passwordArray[j], passwordArray[i]];
+  }
+  
+  return passwordArray.join('');
+};
+
+// Generate deterministic letters-only password (only a-z, no numbers)
+export const generateLettersOnlyPassword = (name, passphrase = '', length) => {
+  // Combine name and passphrase for stronger seed
+  const combinedInput = (name + passphrase).toLowerCase().trim();
+  
+  // Create a deterministic seed from combined input and length
+  let seed = 0;
+  for (let i = 0; i < combinedInput.length; i++) {
+    seed = ((seed << 5) - seed + combinedInput.charCodeAt(i)) & 0xffffffff;
+  }
+  // Use different multiplier for letters-only to avoid collision with other generators
+  seed = Math.abs(seed + length * 7000);
+  
+  // Character set for letters only
+  const lowercase = 'abcdefghijklmnopqrstuvwxyz';
+  
+  // Deterministic random number generator
+  let currentSeed = seed;
+  const random = () => {
+    currentSeed = (currentSeed * 1664525 + 1013904223) % Math.pow(2, 32);
+    return currentSeed / Math.pow(2, 32);
+  };
+  
+  let password = '';
+  
+  // Generate letters-only password
+  for (let i = 0; i < length; i++) {
+    password += lowercase[Math.floor(random() * lowercase.length)];
+  }
+  
+  return password;
+};
+
+// Generate deterministic numbers using same logic as passwords
+export const generateNumber = (name, passphrase = '', length) => {
+  // Combine name and passphrase for stronger seed
+  const combinedInput = (name + passphrase).toLowerCase().trim();
+  
+  // Create a deterministic seed from combined input and length
+  let seed = 0;
+  for (let i = 0; i < combinedInput.length; i++) {
+    seed = ((seed << 5) - seed + combinedInput.charCodeAt(i)) & 0xffffffff;
+  }
+  // Use different multiplier for numbers to avoid collision with passwords
+  seed = Math.abs(seed + length * 2000);
+  
+  // Deterministic random number generator (Linear Congruential Generator)
+  let currentSeed = seed;
+  const random = () => {
+    currentSeed = (currentSeed * 1664525 + 1013904223) % Math.pow(2, 32);
+    return currentSeed / Math.pow(2, 32);
+  };
+  
+  let number = '';
+  
+  // Generate each digit
+  for (let i = 0; i < length; i++) {
+    // For the first digit, ensure it's not 0 (unless it's a single digit)
+    if (i === 0 && length > 1) {
+      number += Math.floor(random() * 9) + 1; // 1-9
+    } else {
+      number += Math.floor(random() * 10); // 0-9
+    }
+  }
+  
+  return number;
 };
 
 // Generate human-readable passphrase
@@ -112,19 +234,90 @@ export const generatePassphrase = (name, length) => {
   
   if (!hasNumber && passphrase.length > 3) {
     const pos = Math.floor(random() * (passphrase.length - 1));
-    passphrase = passphrase.substring(0, pos) + 
-                numbers[Math.floor(random() * numbers.length)] + 
-                passphrase.substring(pos + 1);
+    passphrase = passphrase.substring(0, pos) + numbers[Math.floor(random() * numbers.length)] + passphrase.substring(pos + 1);
   }
   
   if (!hasSpecial && passphrase.length > 2) {
     const pos = Math.floor(random() * (passphrase.length - 1));
-    passphrase = passphrase.substring(0, pos) + 
-                specials[Math.floor(random() * specials.length)] + 
-                passphrase.substring(pos + 1);
+    passphrase = passphrase.substring(0, pos) + specials[Math.floor(random() * specials.length)] + passphrase.substring(pos + 1);
   }
   
   return passphrase;
+};
+
+// Generate deterministic PIN numbers (alternative number generation)
+export const generatePIN = (name, passphrase = '', length) => {
+  // Combine name and passphrase for stronger seed
+  const combinedInput = (name + passphrase).toLowerCase().trim();
+  
+  // Create a deterministic seed from combined input and length
+  let seed = 0;
+  for (let i = 0; i < combinedInput.length; i++) {
+    seed = ((seed << 5) - seed + combinedInput.charCodeAt(i)) & 0xffffffff;
+  }
+  // Use different multiplier for PINs to avoid collision with other generators
+  seed = Math.abs(seed + length * 3000);
+  
+  // Deterministic random number generator
+  let currentSeed = seed;
+  const random = () => {
+    currentSeed = (currentSeed * 1664525 + 1013904223) % Math.pow(2, 32);
+    return currentSeed / Math.pow(2, 32);
+  };
+  
+  let pin = '';
+  
+  // Generate PIN with some constraints for better usability
+  for (let i = 0; i < length; i++) {
+    let digit;
+    
+    // Avoid too many consecutive same digits
+    if (i > 0 && pin[i-1] === pin[i-2]) {
+      // Force different digit
+      do {
+        digit = Math.floor(random() * 10);
+      } while (digit.toString() === pin[i-1]);
+    } else {
+      digit = Math.floor(random() * 10);
+    }
+    
+    pin += digit;
+  }
+  
+  return pin;
+};
+
+// Generate deterministic hex numbers
+export const generateHex = (name, passphrase = '', length) => {
+  // Combine name and passphrase for stronger seed
+  const combinedInput = (name + passphrase).toLowerCase().trim();
+  
+  // Create a deterministic seed from combined input and length
+  let seed = 0;
+  for (let i = 0; i < combinedInput.length; i++) {
+    seed = ((seed << 5) - seed + combinedInput.charCodeAt(i)) & 0xffffffff;
+  }
+  // Use different multiplier for hex to avoid collision
+  seed = Math.abs(seed + length * 4000);
+  
+  // Hex characters
+  const hexChars = '0123456789ABCDEF';
+  
+  // Deterministic random number generator
+  let currentSeed = seed;
+  const random = () => {
+    currentSeed = (currentSeed * 1664525 + 1013904223) % Math.pow(2, 32);
+    return currentSeed / Math.pow(2, 32);
+  };
+  
+  let hex = '';
+  
+  // Generate hex string
+  for (let i = 0; i < length; i++) {
+    hex += hexChars[Math.floor(random() * hexChars.length)];
+  }
+  
+  return hex;
 };
 
 // Additional utility to validate password strength
@@ -141,4 +334,18 @@ export const validatePasswordStrength = (password) => {
   if (score >= 5) return 'Strong';
   if (score >= 3) return 'Medium';
   return 'Weak';
+};
+
+// Utility to validate number properties
+export const validateNumberProperties = (number) => {
+  const length = number.length;
+  const hasRepeatingDigits = /(.)\1{2,}/.test(number);
+  const isSequential = /012|123|234|345|456|567|678|789|890/.test(number);
+  
+  return {
+    length,
+    hasRepeatingDigits,
+    isSequential,
+    entropy: Math.log2(Math.pow(10, length))
+  };
 };
