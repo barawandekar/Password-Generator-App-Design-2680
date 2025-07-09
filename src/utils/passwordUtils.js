@@ -55,60 +55,7 @@ export const generatePassword = (name, passphrase = '', length) => {
   return passwordArray.join('');
 };
 
-// Generate deterministic lowercase password (a-z and 0-9 only)
-export const generateLowerCasePassword = (name, passphrase = '', length) => {
-  // Combine name and passphrase for stronger seed
-  const combinedInput = (name + passphrase).toLowerCase().trim();
-  
-  // Create a deterministic seed from combined input and length
-  let seed = 0;
-  for (let i = 0; i < combinedInput.length; i++) {
-    seed = ((seed << 5) - seed + combinedInput.charCodeAt(i)) & 0xffffffff;
-  }
-  // Use different multiplier for lowercase to avoid collision with other generators
-  seed = Math.abs(seed + length * 5000);
-  
-  // Character sets for lowercase only
-  const lowercase = 'abcdefghijklmnopqrstuvwxyz';
-  const numbers = '0123456789';
-  const allChars = lowercase + numbers;
-  
-  // Deterministic random number generator
-  let currentSeed = seed;
-  const random = () => {
-    currentSeed = (currentSeed * 1664525 + 1013904223) % Math.pow(2, 32);
-    return currentSeed / Math.pow(2, 32);
-  };
-  
-  let password = '';
-  
-  // Ensure at least one letter and one number
-  const requiredChars = [
-    lowercase[Math.floor(random() * lowercase.length)],
-    numbers[Math.floor(random() * numbers.length)]
-  ];
-  
-  // Add required characters to password
-  for (const char of requiredChars) {
-    password += char;
-  }
-  
-  // Fill remaining positions with random lowercase characters
-  for (let i = password.length; i < length; i++) {
-    password += allChars[Math.floor(random() * allChars.length)];
-  }
-  
-  // Shuffle the password to avoid predictable patterns
-  const passwordArray = password.split('');
-  for (let i = passwordArray.length - 1; i > 0; i--) {
-    const j = Math.floor(random() * (i + 1));
-    [passwordArray[i], passwordArray[j]] = [passwordArray[j], passwordArray[i]];
-  }
-  
-  return passwordArray.join('');
-};
-
-// Generate deterministic letters-only password (only a-z, no numbers)
+// Generate deterministic uppercase letters-only password (only A-Z, no numbers or lowercase)
 export const generateLettersOnlyPassword = (name, passphrase = '', length) => {
   // Combine name and passphrase for stronger seed
   const combinedInput = (name + passphrase).toLowerCase().trim();
@@ -118,10 +65,43 @@ export const generateLettersOnlyPassword = (name, passphrase = '', length) => {
   for (let i = 0; i < combinedInput.length; i++) {
     seed = ((seed << 5) - seed + combinedInput.charCodeAt(i)) & 0xffffffff;
   }
-  // Use different multiplier for letters-only to avoid collision with other generators
+  // Use different multiplier for uppercase letters-only to avoid collision with other generators
   seed = Math.abs(seed + length * 7000);
   
-  // Character set for letters only
+  // Character set for uppercase letters only
+  const uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  
+  // Deterministic random number generator
+  let currentSeed = seed;
+  const random = () => {
+    currentSeed = (currentSeed * 1664525 + 1013904223) % Math.pow(2, 32);
+    return currentSeed / Math.pow(2, 32);
+  };
+  
+  let password = '';
+  
+  // Generate uppercase letters-only password
+  for (let i = 0; i < length; i++) {
+    password += uppercase[Math.floor(random() * uppercase.length)];
+  }
+  
+  return password;
+};
+
+// Generate deterministic lowercase letters-only password (only a-z, no numbers or uppercase)
+export const generateLowercaseOnlyPassword = (name, passphrase = '', length) => {
+  // Combine name and passphrase for stronger seed
+  const combinedInput = (name + passphrase).toLowerCase().trim();
+  
+  // Create a deterministic seed from combined input and length
+  let seed = 0;
+  for (let i = 0; i < combinedInput.length; i++) {
+    seed = ((seed << 5) - seed + combinedInput.charCodeAt(i)) & 0xffffffff;
+  }
+  // Use different multiplier for lowercase letters-only to avoid collision with other generators
+  seed = Math.abs(seed + length * 8000);
+  
+  // Character set for lowercase letters only
   const lowercase = 'abcdefghijklmnopqrstuvwxyz';
   
   // Deterministic random number generator
@@ -133,7 +113,7 @@ export const generateLettersOnlyPassword = (name, passphrase = '', length) => {
   
   let password = '';
   
-  // Generate letters-only password
+  // Generate lowercase letters-only password
   for (let i = 0; i < length; i++) {
     password += lowercase[Math.floor(random() * lowercase.length)];
   }

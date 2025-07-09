@@ -6,8 +6,8 @@ import {
   generatePassword, 
   generatePassphrase, 
   generateNumber, 
-  generateLowerCasePassword,
-  generateLettersOnlyPassword 
+  generateLettersOnlyPassword,
+  generateLowercaseOnlyPassword
 } from '../utils/passwordUtils';
 
 const { 
@@ -22,8 +22,8 @@ const {
   FiEdit3, 
   FiZap, 
   FiHash, 
-  FiType,
-  FiAlignLeft
+  FiAlignLeft,
+  FiType
 } = FiIcons;
 
 const PasswordGenerator = () => {
@@ -45,17 +45,17 @@ const PasswordGenerator = () => {
   const [numberCopied, setNumberCopied] = useState(false);
   const [showNumber, setShowNumber] = useState(false);
   
-  // Lowercase password states
-  const [lowercaseLength, setLowercaseLength] = useState(12);
-  const [lowercasePassword, setLowercasePassword] = useState('');
-  const [lowercaseCopied, setLowercaseCopied] = useState(false);
-  const [showLowercase, setShowLowercase] = useState(false);
-  
   // Letters-only password states
   const [lettersOnlyLength, setLettersOnlyLength] = useState(10);
   const [lettersOnlyPassword, setLettersOnlyPassword] = useState('');
   const [lettersOnlyCopied, setLettersOnlyCopied] = useState(false);
   const [showLettersOnly, setShowLettersOnly] = useState(false);
+  
+  // Lowercase-only password states
+  const [lowercaseOnlyLength, setLowercaseOnlyLength] = useState(10);
+  const [lowercaseOnlyPassword, setLowercaseOnlyPassword] = useState('');
+  const [lowercaseOnlyCopied, setLowercaseOnlyCopied] = useState(false);
+  const [showLowercaseOnly, setShowLowercaseOnly] = useState(false);
 
   const handleGeneratePassword = useCallback(async () => {
     if (!name.trim()) return;
@@ -103,27 +103,6 @@ const PasswordGenerator = () => {
     setShowNumber(false);
     setIsGenerating(false);
   }, [name, numberLength, passphraseMode, customPassphrase, generatedPassphrase]);
-
-  const handleGenerateLowercase = useCallback(async () => {
-    if (!name.trim()) return;
-    
-    setIsGenerating(true);
-    
-    // Add a small delay for better UX
-    await new Promise(resolve => setTimeout(resolve, 400));
-    
-    let finalPassphrase = '';
-    if (passphraseMode === 'custom') {
-      finalPassphrase = customPassphrase;
-    } else if (passphraseMode === 'generate' && generatedPassphrase) {
-      finalPassphrase = generatedPassphrase;
-    }
-    
-    const lowercase = generateLowerCasePassword(name.trim(), finalPassphrase, lowercaseLength);
-    setLowercasePassword(lowercase);
-    setShowLowercase(false);
-    setIsGenerating(false);
-  }, [name, lowercaseLength, passphraseMode, customPassphrase, generatedPassphrase]);
   
   const handleGenerateLettersOnly = useCallback(async () => {
     if (!name.trim()) return;
@@ -145,6 +124,27 @@ const PasswordGenerator = () => {
     setShowLettersOnly(false);
     setIsGenerating(false);
   }, [name, lettersOnlyLength, passphraseMode, customPassphrase, generatedPassphrase]);
+  
+  const handleGenerateLowercaseOnly = useCallback(async () => {
+    if (!name.trim()) return;
+    
+    setIsGenerating(true);
+    
+    // Add a small delay for better UX
+    await new Promise(resolve => setTimeout(resolve, 400));
+    
+    let finalPassphrase = '';
+    if (passphraseMode === 'custom') {
+      finalPassphrase = customPassphrase;
+    } else if (passphraseMode === 'generate' && generatedPassphrase) {
+      finalPassphrase = generatedPassphrase;
+    }
+    
+    const lowercaseOnly = generateLowercaseOnlyPassword(name.trim(), finalPassphrase, lowercaseOnlyLength);
+    setLowercaseOnlyPassword(lowercaseOnly);
+    setShowLowercaseOnly(false);
+    setIsGenerating(false);
+  }, [name, lowercaseOnlyLength, passphraseMode, customPassphrase, generatedPassphrase]);
 
   const handleCopyPassword = async () => {
     if (!password) return;
@@ -169,18 +169,6 @@ const PasswordGenerator = () => {
       console.error('Failed to copy number:', err);
     }
   };
-
-  const handleCopyLowercase = async () => {
-    if (!lowercasePassword) return;
-    
-    try {
-      await navigator.clipboard.writeText(lowercasePassword);
-      setLowercaseCopied(true);
-      setTimeout(() => setLowercaseCopied(false), 2000);
-    } catch (err) {
-      console.error('Failed to copy lowercase password:', err);
-    }
-  };
   
   const handleCopyLettersOnly = async () => {
     if (!lettersOnlyPassword) return;
@@ -191,6 +179,18 @@ const PasswordGenerator = () => {
       setTimeout(() => setLettersOnlyCopied(false), 2000);
     } catch (err) {
       console.error('Failed to copy letters-only password:', err);
+    }
+  };
+  
+  const handleCopyLowercaseOnly = async () => {
+    if (!lowercaseOnlyPassword) return;
+    
+    try {
+      await navigator.clipboard.writeText(lowercaseOnlyPassword);
+      setLowercaseOnlyCopied(true);
+      setTimeout(() => setLowercaseOnlyCopied(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy lowercase-only password:', err);
     }
   };
 
@@ -205,8 +205,8 @@ const PasswordGenerator = () => {
     setGeneratedPassphrase('');
     setPassword('');
     setGeneratedNumber('');
-    setLowercasePassword('');
     setLettersOnlyPassword('');
+    setLowercaseOnlyPassword('');
   };
 
   return (
@@ -309,40 +309,15 @@ const PasswordGenerator = () => {
                 </div>
               </div>
             </motion.div>
-
-            {/* Lowercase Password Length Selector */}
+            
+            {/* Letters Only Password Length Selector */}
             <motion.div
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.5 }}
             >
               <label className="block text-sm font-medium text-gray-700 mb-3">
-                Lowercase: {lowercaseLength}
-              </label>
-              <div className="relative">
-                <input
-                  type="range"
-                  min="6"
-                  max="50"
-                  value={lowercaseLength}
-                  onChange={(e) => setLowercaseLength(parseInt(e.target.value))}
-                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
-                />
-                <div className="flex justify-between text-xs text-gray-500 mt-1">
-                  <span>6</span>
-                  <span>50</span>
-                </div>
-              </div>
-            </motion.div>
-            
-            {/* Letters Only Password Length Selector */}
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.55 }}
-            >
-              <label className="block text-sm font-medium text-gray-700 mb-3">
-                Letters: {lettersOnlyLength}
+                UPPERCASE: {lettersOnlyLength}
               </label>
               <div className="relative">
                 <input
@@ -351,6 +326,31 @@ const PasswordGenerator = () => {
                   max="30"
                   value={lettersOnlyLength}
                   onChange={(e) => setLettersOnlyLength(parseInt(e.target.value))}
+                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+                />
+                <div className="flex justify-between text-xs text-gray-500 mt-1">
+                  <span>4</span>
+                  <span>30</span>
+                </div>
+              </div>
+            </motion.div>
+            
+            {/* Lowercase Only Password Length Selector */}
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.55 }}
+            >
+              <label className="block text-sm font-medium text-gray-700 mb-3">
+                lowercase: {lowercaseOnlyLength}
+              </label>
+              <div className="relative">
+                <input
+                  type="range"
+                  min="4"
+                  max="30"
+                  value={lowercaseOnlyLength}
+                  onChange={(e) => setLowercaseOnlyLength(parseInt(e.target.value))}
                   className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
                 />
                 <div className="flex justify-between text-xs text-gray-500 mt-1">
@@ -517,20 +517,6 @@ const PasswordGenerator = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.7 }}
-              onClick={handleGenerateLowercase}
-              disabled={!name.trim() || isGenerating}
-              className="w-full bg-gradient-to-r from-purple-500 to-pink-600 text-white py-3 rounded-xl font-medium hover:from-purple-600 hover:to-pink-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center gap-2"
-              whileHover={{ scale: name.trim() ? 1.02 : 1 }}
-              whileTap={{ scale: name.trim() ? 0.98 : 1 }}
-            >
-              <SafeIcon icon={FiType} />
-              Lowercase
-            </motion.button>
-            
-            <motion.button
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.75 }}
               onClick={handleGenerateLettersOnly}
               disabled={!name.trim() || isGenerating}
               className="w-full bg-gradient-to-r from-amber-500 to-orange-600 text-white py-3 rounded-xl font-medium hover:from-amber-600 hover:to-orange-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center gap-2"
@@ -538,7 +524,21 @@ const PasswordGenerator = () => {
               whileTap={{ scale: name.trim() ? 0.98 : 1 }}
             >
               <SafeIcon icon={FiAlignLeft} />
-              Letters
+              UPPERCASE
+            </motion.button>
+            
+            <motion.button
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.75 }}
+              onClick={handleGenerateLowercaseOnly}
+              disabled={!name.trim() || isGenerating}
+              className="w-full bg-gradient-to-r from-purple-500 to-pink-600 text-white py-3 rounded-xl font-medium hover:from-purple-600 hover:to-pink-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center gap-2"
+              whileHover={{ scale: name.trim() ? 1.02 : 1 }}
+              whileTap={{ scale: name.trim() ? 0.98 : 1 }}
+            >
+              <SafeIcon icon={FiType} />
+              lowercase
             </motion.button>
           </div>
 
@@ -730,87 +730,6 @@ const PasswordGenerator = () => {
               )}
             </AnimatePresence>
             
-            {/* Lowercase Password Output */}
-            <AnimatePresence>
-              {lowercasePassword && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  exit={{ opacity: 0, height: 0 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Lowercase Password (a-z, 0-9)
-                  </label>
-                  <div className="relative">
-                    <textarea
-                      value={lowercasePassword}
-                      readOnly
-                      rows={3}
-                      className="w-full pr-20 pl-4 py-3 border border-gray-300 rounded-xl bg-purple-50 font-mono text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
-                      style={{ display: showLowercase ? 'block' : 'none' }}
-                    />
-                    <input
-                      type="password"
-                      value={lowercasePassword}
-                      readOnly
-                      className="w-full pr-20 pl-4 py-3 border border-gray-300 rounded-xl bg-purple-50 font-mono text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                      style={{ display: showLowercase ? 'none' : 'block' }}
-                    />
-                    <div className="absolute right-2 top-3 flex gap-1">
-                      <button
-                        onClick={() => setShowLowercase(!showLowercase)}
-                        className="p-2 text-gray-500 hover:text-gray-700 transition-colors"
-                        title={showLowercase ? "Hide password" : "Show password"}
-                      >
-                        <SafeIcon icon={showLowercase ? FiEyeOff : FiEye} />
-                      </button>
-                      <button
-                        onClick={handleCopyLowercase}
-                        className="p-2 text-gray-500 hover:text-gray-700 transition-colors"
-                        title="Copy lowercase password"
-                      >
-                        <AnimatePresence mode="wait">
-                          {lowercaseCopied ? (
-                            <motion.div
-                              key="copied"
-                              initial={{ scale: 0 }}
-                              animate={{ scale: 1 }}
-                              exit={{ scale: 0 }}
-                            >
-                              <SafeIcon icon={FiCheck} className="text-green-500" />
-                            </motion.div>
-                          ) : (
-                            <motion.div
-                              key="copy"
-                              initial={{ scale: 0 }}
-                              animate={{ scale: 1 }}
-                              exit={{ scale: 0 }}
-                            >
-                              <SafeIcon icon={FiCopy} />
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
-                      </button>
-                    </div>
-                  </div>
-                  
-                  {/* Lowercase Password Properties */}
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.2 }}
-                    className="mt-3 flex items-center gap-2"
-                  >
-                    <div className="flex-1 bg-gray-200 rounded-full h-2">
-                      <div className="bg-gradient-to-r from-purple-400 to-pink-500 h-2 rounded-full w-full"></div>
-                    </div>
-                    <span className="text-xs font-medium text-purple-600">Simple Format</span>
-                  </motion.div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-            
             {/* Letters-Only Password Output */}
             <AnimatePresence>
               {lettersOnlyPassword && (
@@ -821,7 +740,7 @@ const PasswordGenerator = () => {
                   transition={{ duration: 0.3 }}
                 >
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Letters-Only Password (a-z only)
+                    UPPERCASE Letters (A-Z only)
                   </label>
                   <div className="relative">
                     <textarea
@@ -886,7 +805,88 @@ const PasswordGenerator = () => {
                     <div className="flex-1 bg-gray-200 rounded-full h-2">
                       <div className="bg-gradient-to-r from-amber-400 to-orange-500 h-2 rounded-full w-full"></div>
                     </div>
-                    <span className="text-xs font-medium text-amber-600">Letters Only</span>
+                    <span className="text-xs font-medium text-amber-600">Uppercase Only</span>
+                  </motion.div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+            
+            {/* Lowercase-Only Password Output */}
+            <AnimatePresence>
+              {lowercaseOnlyPassword && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    lowercase Letters (a-z only)
+                  </label>
+                  <div className="relative">
+                    <textarea
+                      value={lowercaseOnlyPassword}
+                      readOnly
+                      rows={3}
+                      className="w-full pr-20 pl-4 py-3 border border-gray-300 rounded-xl bg-purple-50 font-mono text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+                      style={{ display: showLowercaseOnly ? 'block' : 'none' }}
+                    />
+                    <input
+                      type="password"
+                      value={lowercaseOnlyPassword}
+                      readOnly
+                      className="w-full pr-20 pl-4 py-3 border border-gray-300 rounded-xl bg-purple-50 font-mono text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      style={{ display: showLowercaseOnly ? 'none' : 'block' }}
+                    />
+                    <div className="absolute right-2 top-3 flex gap-1">
+                      <button
+                        onClick={() => setShowLowercaseOnly(!showLowercaseOnly)}
+                        className="p-2 text-gray-500 hover:text-gray-700 transition-colors"
+                        title={showLowercaseOnly ? "Hide password" : "Show password"}
+                      >
+                        <SafeIcon icon={showLowercaseOnly ? FiEyeOff : FiEye} />
+                      </button>
+                      <button
+                        onClick={handleCopyLowercaseOnly}
+                        className="p-2 text-gray-500 hover:text-gray-700 transition-colors"
+                        title="Copy lowercase-only password"
+                      >
+                        <AnimatePresence mode="wait">
+                          {lowercaseOnlyCopied ? (
+                            <motion.div
+                              key="copied"
+                              initial={{ scale: 0 }}
+                              animate={{ scale: 1 }}
+                              exit={{ scale: 0 }}
+                            >
+                              <SafeIcon icon={FiCheck} className="text-green-500" />
+                            </motion.div>
+                          ) : (
+                            <motion.div
+                              key="copy"
+                              initial={{ scale: 0 }}
+                              animate={{ scale: 1 }}
+                              exit={{ scale: 0 }}
+                            >
+                              <SafeIcon icon={FiCopy} />
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </button>
+                    </div>
+                  </div>
+                  
+                  {/* Lowercase-Only Password Properties */}
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.2 }}
+                    className="mt-3 flex items-center gap-2"
+                  >
+                    <div className="flex-1 bg-gray-200 rounded-full h-2">
+                      <div className="bg-gradient-to-r from-purple-400 to-pink-500 h-2 rounded-full w-full"></div>
+                    </div>
+                    <span className="text-xs font-medium text-purple-600">Lowercase Only</span>
                   </motion.div>
                 </motion.div>
               )}
@@ -905,8 +905,8 @@ const PasswordGenerator = () => {
               <span className="block mt-1">
                 <strong>Password Types:</strong>
                 <span className="text-indigo-700"> Standard (A-Z, a-z, 0-9, symbols)</span> | 
-                <span className="text-purple-700"> Lowercase (a-z, 0-9)</span> | 
-                <span className="text-amber-700"> Letters (a-z only)</span> | 
+                <span className="text-amber-700"> UPPERCASE (A-Z only)</span> | 
+                <span className="text-purple-700"> lowercase (a-z only)</span> | 
                 <span className="text-green-700"> Numbers (0-9 only)</span>
               </span>
               {passphraseMode !== 'none' && (
